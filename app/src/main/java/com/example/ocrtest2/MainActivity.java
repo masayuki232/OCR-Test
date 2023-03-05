@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -48,10 +50,21 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
             }
         }, 0);
     }
+
+    @Override
+    public void onContentChanged() {
+        super.onContentChanged();
+
+    }
+
     private Bitmap getScreenBitmap(View view) {
         // Get the dimensions of the screen
         int width = view.getWidth();
         int height = view.getHeight();
+
+        if ( width == 0 || height == 0 ) {
+            return null;
+        }
 
         // Create a bitmap with the same dimensions
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -76,9 +89,10 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
 
     private void scanCurrentScreen() {
         // Get the current screen as a bitmap
-        View rootView = getWindow().getDecorView().getRootView();
-        Bitmap screenBitmap = getScreenBitmap(rootView);
 
+        // Disini nnti ganti ntah jadi surfaceview, gambar atau yg lain"
+        View viewToRead = findViewById(R.id.imageToRead);
+        Bitmap screenBitmap = getScreenBitmap(viewToRead);
         // Check for errors in the bitmap
         if (screenBitmap == null) {
             Log.e(TAG, "Screen bitmap is null");

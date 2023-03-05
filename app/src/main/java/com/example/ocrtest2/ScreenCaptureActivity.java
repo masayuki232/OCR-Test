@@ -17,7 +17,6 @@ import android.view.WindowManager;
 
 
 import android.media.projection.MediaProjection;
-import android.media.projection.MediaProjection.Callback;
 import android.media.projection.MediaProjectionManager;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,7 +28,32 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class ScreenCaptureActivity extends AppCompatActivity implements MediaProjection.Callback {
+public class ScreenCaptureActivity extends AppCompatActivity {
+    private MediaProjection.Callback medProjectionCallback = new MediaProjection.Callback() {
+        @Override
+        public void onStop() {
+            super.onStop();
+            // Stop and release the MediaRecorder object
+            if (mediaRecorder != null) {
+                mediaRecorder.stop();
+                mediaRecorder.release();
+                mediaRecorder = null;
+            }
+
+            // Stop and release the VirtualDisplay object
+            if (virtualDisplay != null) {
+                virtualDisplay.release();
+                virtualDisplay = null;
+            }
+
+            // Stop and release the MediaProjection object
+            if (mediaProjection != null) {
+                mediaProjection.unregisterCallback(this);
+                mediaProjection.stop();
+                mediaProjection = null;
+            }
+        }
+    };
     private static final String TAG = "ScreenCaptureActivity";
     private static final int REQUEST_CODE_SCREEN_CAPTURE = 1;
     private MediaRecorder mediaRecorder;
@@ -77,31 +101,6 @@ public class ScreenCaptureActivity extends AppCompatActivity implements MediaPro
         }
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // Stop and release the MediaRecorder object
-        if (mediaRecorder != null) {
-            mediaRecorder.stop();
-            mediaRecorder.release();
-            mediaRecorder = null;
-        }
-
-        // Stop and release the VirtualDisplay object
-        if (virtualDisplay != null) {
-            virtualDisplay.release();
-            virtualDisplay = null;
-        }
-
-        // Stop and release the MediaProjection object
-        if (mediaProjection != null) {
-            mediaProjection.unregisterCallback(this);
-            mediaProjection.stop();
-            mediaProjection = null;
-        }
-    }
-
 
 
     @Override
@@ -117,7 +116,7 @@ public class ScreenCaptureActivity extends AppCompatActivity implements MediaPro
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_SCREEN_CAPTURE && resultCode == Activity.RESULT_OK) {
             mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
-            mediaProjection.registerCallback(this, null);
+            mediaProjection.registerCallback(medProjectionCallback, null);
             startRecording();
         }
     }
